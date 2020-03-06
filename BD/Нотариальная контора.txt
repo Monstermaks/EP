@@ -1,0 +1,48 @@
+CREATE TABLE Client (ID Counter, Name char(255), Phone_number char(255), Address char(255), Birthday date, PRIMARY KEY(ID));
+CREATE TABLE Notary (ID Counter, Name char(255), Phone_number char(255), Work_time char(255), Work_experience char(255), PRIMARY KEY(ID));
+CREATE TABLE Service (ID Counter, ID_Client Int, ID_Notary Int, Name char(255), Description char(255), Receipt_date date, Price float, PRIMARY KEY(ID), FOREIGN KEY (ID_Client) REFERENCES Client (ID), FOREIGN KEY (ID_Client) REFERENCES Client (ID));
+CREATE TABLE Receipt (ID Counter, ID_Client Int, Service_price float, Discount float, Completion_date date, Payment_method char(255), PRIMARY KEY(ID), FOREIGN KEY (ID_Client) REFERENCES Client (ID));
+
+INSERT INTO Client VALUES (1, "Иванов А. И.", "+375336482481", "ул. Петрова д. 8 кв. 32", "27.03.1993");
+INSERT INTO Client VALUES (2, "Петров А. Н.", "+375294419752", "ул. Герцена д. 10 кв. 2", "07.10.1990");
+INSERT INTO Client VALUES (3, "Сувалова К. В.", "+375339372955", "ул. Чкалова д. 32 кв. 62", "01.01.1990");
+INSERT INTO Client VALUES (4, "Петруха В. А.", "+375331129367", "ул. Бровки д. 11 кв. 128", "09.08.1987");
+INSERT INTO Client VALUES (5, "Валок Н. Л.", "+375294469728", "ул. Ленина д. 19 кв. 12", "11.01.2000");
+
+INSERT INTO Notary VALUES (1, "Петрова Е. Н.", "+375334932851", "8:00 - 14:00", "5 лет");
+INSERT INTO Notary VALUES (2, "Линов Е. А.", "+375336448751", "14:00 - 20:00", "8 лет");
+INSERT INTO Notary VALUES (3, "Пирова Н. Л.", "+375298632741", "14:00 - 20:00", "2 лет");
+INSERT INTO Notary VALUES (4, "Жолин А. П.", "+375294791313", "8:00 - 14:00", "5 лет");
+INSERT INTO Notary VALUES (5, "Агеев Б. А.", "+375294419736", "8:00 - 14:00", "10 лет");
+
+INSERT INTO Service VALUES (1, 3, 2, "Принятие наследства", "Войти в права на наследство от дальнего родственника", "09.02.2020", 128.9);
+INSERT INTO Service VALUES (2, 1, 5, "Составление брачного договора", "Составить брачный договор при заключении брака", "13.02.2020", 208.9);
+INSERT INTO Service VALUES (3, 5, 1, "Дарение жилья", "Дарение жилья сыну", "10.02.2020", 97.9);
+INSERT INTO Service VALUES (4, 2, 3, "Дарение имущества", "Дарение машины жене", "20.02.2020", 143.9);
+INSERT INTO Service VALUES (5, 4, 4, "Удостоверение завещания", "Составление и удоставерение завещания", "30.01.2020", 214.9);
+
+INSERT INTO Receipt VALUES (1, 2, 143.9, 0, "20.02.2020", "По карте");
+INSERT INTO Receipt VALUES (2, 5, 97.9, 2.1, "10.02.2020", "Наличными");
+INSERT INTO Receipt VALUES (3, 3, 128.9, 0.9, "09.02.2020", "Наличными");
+INSERT INTO Receipt VALUES (4, 1, 208.9, 4.9, "13.02.2020", "По карте");
+INSERT INTO Receipt VALUES (5, 4, 214.9, 9.3, "30.01.2020", "По карте");
+
+SELECT Name FROM Client WHERE (Phone_number LIKE "+37529*"); - вывести имена всех клиентов у которых оператор 29
+SELECT Name FROM Service WHERE (Price BETWEEN 100 AND 200); - вывести имена всех услуг цена которых находится в диапазоне от 100 до 200 рублей
+SELECT Name FROM Notary WHERE (Work_experience IN("3 лет", "5 лет", "8 лет")); - вывести имена нотариусов чей стаж лет равен 3, 5 или 8 лет
+SELECT Service_price FROM Receipt WHERE (Discount NOT BETWEEN 1 AND 5); - вывести цену услуг всех чеков у которых скидка не находится в диапазоне от 1 до 5
+SELECT Name FROM Service WHERE (Price=97.9 OR Price=143.9); - вывести именя услуги цена которой равна 97,9 или 143,9
+SELECT Payment_method FROM Receipt WHERE (Service_price=97.9 AND Discount=2.1); - вывести способ оплаты услуги в чеке где цена услуги равна 97,9 и скидка равна 2,1
+//SELECT Name, Description FROM Service WHERE ID=ANY (SELECT ID FROM Service WHERE ID>3); - вывести имена и описания услуг если в таблице service хотябы у одной услуги id > 3
+//SELECT Name, Description FROM Service WHERE ID=ALL (SELECT ID FROM Service WHERE ID>7); - вывести имена и описания услуг если в таблице service у всех услуг id > 7
+//SELECT Name, Description FROM Service WHERE EXISTS (SELECT Price FROM Service WHERE Price=97.9); - вывести имена и описания всех услуг таблицы service если в таблице service хотябы у одной услуги price = 97.9
+//SELECT Name, Description FROM Service WHERE ID=SOME (SELECT ID FROM Service WHERE ID>4); - вывести имена и описания услуг если в таблице service хотябы у одной услуги id > 4
+
+SELECT Service_price, Discount, Service_price-Discount as [Итоговая цена], round((Service_price-Discount) / 2.23, 2) as [Цена в USD] FROM Receipt; - вывести цену, скидку, итоговую цену(цена - скидка) и итоговую цену в $ услуг из чеков
+SELECT Name,round((#05/03/2020# - (Birthday))/365,0) as [Age] FROM Client; - вычисление возраста клиентов
+
+SELECT Client.Name, Service.Name, Notary.Name
+FROM Client INNER JOIN (Notary INNER JOIN Service ON Notary.ID = Service.ID_Notary)
+ON Client.ID = Service.ID_Client
+WHERE Client.ID > 2; - Объединение нескольких таблиц в источнике выборки
+
